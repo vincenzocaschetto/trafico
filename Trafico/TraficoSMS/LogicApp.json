@@ -1,0 +1,181 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    },
+    "twilio_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "twilio"
+    },
+    "twilio_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "Twilio"
+    },
+    "twilio_1_sid": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Twilio Account Id"
+      }
+    },
+    "twilio_1_token": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Twilio Access Token"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "HTTP": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "https://grnqm12udh.execute-api.eu-central-1.amazonaws.com/ApiGfi/trafico",
+                "body": {
+                  "calle": "@{triggerBody()?['calle']}"
+                }
+              },
+              "runAfter": {}
+            },
+            "Response": {
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 200,
+                "body": "@body('HTTP')"
+              },
+              "runAfter": {
+                "Enviar_mensaje_de_texto_(SMS)": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Enviar_mensaje_de_texto_(SMS)": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['twilio_1']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "from": "+34911060883",
+                  "to": "@{triggerBody()?['telefono']}",
+                  "body": "El tráfico actual en la calle @{triggerBody()?['calle']} es @{body('HTTP')['traficoactual']}"
+                },
+                "path": "/Messages.json"
+              },
+              "runAfter": {
+                "HTTP": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "twilio_1": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'twilio')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('twilio_1_Connection_Name'))]",
+                "connectionName": "[parameters('twilio_1_Connection_Name')]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('twilio_1_Connection_Name'))]"
+      ]
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('twilio_1_Connection_Name')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'twilio')]"
+        },
+        "displayName": "[parameters('twilio_1_Connection_DisplayName')]",
+        "parameterValues": {
+          "sid": "[parameters('twilio_1_sid')]",
+          "token": "[parameters('twilio_1_token')]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

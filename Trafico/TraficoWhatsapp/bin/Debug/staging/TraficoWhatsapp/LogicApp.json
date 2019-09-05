@@ -1,0 +1,248 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "Condición": {
+              "actions": {
+                "Condición_3": {
+                  "actions": {
+                    "Establecer_variable": {
+                      "inputs": {
+                        "name": "calle",
+                        "value": "@{split(body('TwilioWhatsAppSerializer')?['Body'],'Tráfico en ')[1]}"
+                      },
+                      "runAfter": {},
+                      "type": "SetVariable"
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "startsWith": [
+                          "@body('TwilioWhatsAppSerializer')?['Body']",
+                          "Tráfico en"
+                        ]
+                      }
+                    ]
+                  },
+                  "runAfter": {},
+                  "type": "If"
+                },
+                "Finalizar": {
+                  "inputs": {
+                    "runStatus": "Failed"
+                  },
+                  "runAfter": {
+                    "Respuesta_5": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Terminate"
+                },
+                "HTTP": {
+                  "inputs": {
+                    "method": "GET",
+                    "retryPolicy": {
+                      "type": "none"
+                    },
+                    "uri": "https://hrecreo.ml:50002/traficoactual?calle=@{variables('calle')}"
+                  },
+                  "runAfter": {
+                    "Condición_3": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Http"
+                },
+                "Respuesta": {
+                  "inputs": {
+                    "body": "El tráfico actual en la calle @{variables('calle')} es @{body('HTTP')['traficoactual']}",
+                    "statusCode": 200
+                  },
+                  "kind": "Http",
+                  "runAfter": {
+                    "HTTP": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Response"
+                },
+                "Respuesta_5": {
+                  "inputs": {
+                    "body": "Lamentablemente no se pudo encontrar el tráfico en @{variables('calle')}",
+                    "statusCode": 200
+                  },
+                  "kind": "Http",
+                  "runAfter": {
+                    "HTTP": [
+                      "Failed",
+                      "Skipped",
+                      "TimedOut"
+                    ]
+                  },
+                  "type": "Response"
+                }
+              },
+              "else": {
+                "actions": {
+                  "Condición_2": {
+                    "actions": {
+                      "Respuesta_2": {
+                        "inputs": {
+                          "body": "Actualmente la única calle monitorizada es la calle Paseo La castellana, así que puedes escribir \"Tráfico en Paseo La Castellana\" o simplemente \"Tráfico\"",
+                          "statusCode": 200
+                        },
+                        "kind": "Http",
+                        "runAfter": {},
+                        "type": "Response"
+                      }
+                    },
+                    "else": {
+                      "actions": {
+                        "Respuesta_3": {
+                          "inputs": {
+                            "body": "Para usar este servicio escribe \"Tráfico en XXXX\" donde XXXX es el nombre de la calle en la que deseas saber el tráfico. Para conocer las calles monitorizadas, escribe \"Calles\"",
+                            "statusCode": 200
+                          },
+                          "kind": "Http",
+                          "runAfter": {},
+                          "type": "Response"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "startsWith": [
+                            "@body('TwilioWhatsAppSerializer')?['Body']",
+                            "Calles"
+                          ]
+                        }
+                      ]
+                    },
+                    "runAfter": {},
+                    "type": "If"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "startsWith": [
+                      "@body('TwilioWhatsAppSerializer')?['Body']",
+                      "Tráfico"
+                    ]
+                  }
+                ]
+              },
+              "runAfter": {
+                "Inicializar_variable": [
+                  "Succeeded"
+                ]
+              },
+              "type": "If"
+            },
+            "Inicializar_variable": {
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "calle",
+                    "type": "String",
+                    "value": "Paseo La Castellana"
+                  }
+                ]
+              },
+              "runAfter": {
+                "TwilioWhatsAppSerializer": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable"
+            },
+            "TwilioWhatsAppSerializer": {
+              "inputs": {
+                "body": "@triggerBody()",
+                "function": {
+                  "id": "/subscriptions/bac9b221-a7b6-41e1-a82f-83a22781ad41/resourceGroups/Alduar.Demos/providers/Microsoft.Web/sites/TwlioCallFuntionMac/functions/TwilioWhatsAppSerializer"
+                }
+              },
+              "runAfter": {},
+              "type": "Function"
+            }
+          },
+          "parameters": {},
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {}
+      }
+    }
+  ],
+  "outputs": {}
+}

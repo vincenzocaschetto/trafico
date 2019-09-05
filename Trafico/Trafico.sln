@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwilioSerializerFunctionApp", "TwilioSerializerFunctionApp\TwilioSerializerFunctionApp.csproj", "{C0FF2A90-71E0-456E-9239-4405249598E0}"
+EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "TraficoWhatsapp", "TraficoWhatsapp\TraficoWhatsapp.deployproj", "{E8681BB6-2C55-4913-8ECE-46063E451CBB}"
+EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "TraficoSMS", "TraficoSMS\TraficoSMS.deployproj", "{DFD4420C-1ABD-4F4C-B6C0-AF1B55D4640C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0FF2A90-71E0-456E-9239-4405249598E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0FF2A90-71E0-456E-9239-4405249598E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0FF2A90-71E0-456E-9239-4405249598E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0FF2A90-71E0-456E-9239-4405249598E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8681BB6-2C55-4913-8ECE-46063E451CBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8681BB6-2C55-4913-8ECE-46063E451CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8681BB6-2C55-4913-8ECE-46063E451CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8681BB6-2C55-4913-8ECE-46063E451CBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFD4420C-1ABD-4F4C-B6C0-AF1B55D4640C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFD4420C-1ABD-4F4C-B6C0-AF1B55D4640C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFD4420C-1ABD-4F4C-B6C0-AF1B55D4640C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFD4420C-1ABD-4F4C-B6C0-AF1B55D4640C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {37226B8D-CC51-4FD8-AF53-3F717207F0C6}
+	EndGlobalSection
+EndGlobal
